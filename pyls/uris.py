@@ -3,6 +3,7 @@
 
 https://github.com/Microsoft/vscode-uri/blob/e59cab84f5df6265aed18ae5f43552d3eef13bb9/lib/index.ts
 """
+import os
 import re
 from urllib import parse
 from pyls import IS_WIN
@@ -94,6 +95,20 @@ def uri_with(uri, scheme=None, netloc=None, path=None, params=None, query=None, 
         query or old_query,
         fragment or old_fragment
     ))
+
+
+def translate_to_client_uri(local_uri):
+    return local_uri.replace(
+        os.environ['SERVER_MOUNT_PATH'],
+        os.environ['CLIENT_MOUNT_PATH'],
+    )
+
+
+def translate_to_server_uri(mounted_uri):
+    return mounted_uri.replace(
+        os.environ['CLIENT_MOUNT_PATH'],
+        os.environ['SERVER_MOUNT_PATH'],
+    )
 
 
 def _normalize_win_path(path):

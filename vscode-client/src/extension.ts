@@ -27,7 +27,7 @@ function startLangServerTCP(addr: number, documentSelector: string[]): Disposabl
 	const serverOptions: ServerOptions = function() {
 		return new Promise((resolve, reject) => {
 			var client = new net.Socket();
-			client.connect(addr, "127.0.0.1", function() {
+			client.connect(addr, process.env.PYLS_HOST, function() {
 				resolve({
 					reader: client,
 					writer: client
@@ -43,8 +43,8 @@ function startLangServerTCP(addr: number, documentSelector: string[]): Disposabl
 }
 
 export function activate(context: ExtensionContext) {
-    context.subscriptions.push(startLangServer("pyls", ["-vv"], ["python"]));
+    //context.subscriptions.push(startLangServer("pyls", ["-vv"], ["python"]));
     // For TCP server needs to be started seperately
-    // context.subscriptions.push(startLangServerTCP(2087, ["python"]));
+    context.subscriptions.push(startLangServerTCP(process.env.PYLS_PORT, ["python"]));
 }
 

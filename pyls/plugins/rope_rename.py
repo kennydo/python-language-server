@@ -27,8 +27,8 @@ def pyls_rename(config, workspace, document, position, new_name):
     return {
         'documentChanges': [{
             'textDocument': {
-                'uri': uris.uri_with(
-                    document.uri, path=os.path.join(workspace.root_path, change.resource.path)
+                'uri': uris.translate_to_client_uri(uris.uri_with(
+                    document.uri, path=os.path.join(workspace.root_path, change.resource.path))
                 ),
                 'version': workspace.get_document(document.uri).version
             },

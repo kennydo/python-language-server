@@ -15,7 +15,7 @@ def pyls_references(document, position, exclude_declaration=False):
         usages = [d for d in usages if not d.is_definition()]
 
     return [{
-        'uri': uris.uri_with(document.uri, path=d.module_path) if d.module_path else document.uri,
+        'uri': uris.translate_to_client_uri(uris.uri_with(document.uri, path=d.module_path)) if d.module_path else document.uri,
         'range': {
             'start': {'line': d.line - 1, 'character': d.column},
             'end': {'line': d.line - 1, 'character': d.column + len(d.name)}

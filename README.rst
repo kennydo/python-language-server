@@ -38,7 +38,7 @@ All optional providers can be installed using:
 
 ``pip install 'python-language-server[all]'``
 
-If you get an error similar to ``'install_requires' must be a string or list of strings`` then please upgrade setuptools before trying again. 
+If you get an error similar to ``'install_requires' must be a string or list of strings`` then please upgrade setuptools before trying again.
 
 ``pip install -U setuptools``
 
@@ -114,33 +114,73 @@ To run the test suite:
 
 ``pip install .[test] && tox``
 
-Develop against VS Code
-=======================
+Running the Python Language Server on a Remote Host
+===================================================
 
-The Python language server can be developed against a local instance of Visual Studio Code.
+If your code and virtual environment are on a remote host, but you want to edit it on a local machine that has SSHFS-mounted a directory on the remote host, here is how to make your local VS Code use the Python Language Server running on the remote host.
 
-1. Install `VSCode for Mac <http://code.visualstudio.com/docs/?dv=osx>`_
-2. From within VSCode View -> Command Palette, then type *shell* and run ``install 'code' command in PATH``
+In these instructions, let's pretend that we're mounting ``/home/kedo/workspace`` (on a remote Linux host) as ``/Users/kedo/workspace`` (on a local macOS computer).
+
+We refer to the Linux host as the server, and the macOS computer running VS Code as the client.
+
+On the Server
+-------------
 
 .. code-block:: bash
 
-    # Setup a virtual env
-    virtualenv env
-    . env/bin/activate
+    # Check out this repository to a known location.
+    # It can be anywhere. For this example, we'll just put it in the home dir.
+    $ git clone https://github.com/kennydo/python-language-server.git ~/python-language-server
 
-    # Install pyls
-    pip install .
+    # Go to your code repository
+    $ cd ~/path/to/my/python/code
+
+    # Setup a virtual environment or activate an existing one
+    $ source my_virtualenv/bin/activate
+
+    # Install the `pyls` command
+    $ pip install ~/python-language-server
+
+    # Run the `pyls` server.
+    # The port can be whatever you want.
+    $ SERVER_MOUNT_PATH='file:///home/kedo/workspace/' CLIENT_MOUNT_PATH='file:///Users/kedo/workspace/' pyls --host 0.0.0.0 --port 2525 --tcp
+
+On the Client
+-------------
+
+1. Install `VSCode for Mac <http://code.visualstudio.com/docs/?dv=osx>`_
+2. From within VSCode View -> Command Palette, then type *shell* and run ``install 'code' command in PATH``
+3. Install yarn (ex: ``brew install yarn``)
+
+.. code-block:: bash
+
+    # Check out this repository
+    $ git clone https://github.com/kennydo/python-language-server.git
+
+    # Enter the repository
+    $ cd python-language-server
 
     # Install the vscode-client extension
-    cd vscode-client
-    yarn install
+    $ cd vscode-client
+    $ yarn install
 
-    # Run VSCode which is configured to use pyls
-    # See the bottom of vscode-client/src/extension.ts for info
-    yarn run vscode -- $PWD/../
+    # Run VSCode, which is configured to use pyls.
+    # Pass in the full hostname (or IP address) of
+    # the remote host via environment variable.
+    # Pass in the same port number as the port argument to `pyls`.
+    $ PYLS_HOST=remote.hostname.here PYLS_PORT=2525 yarn run vscode ...
 
 Then to debug, click View -> Output and in the dropdown will be pyls.
-To refresh VSCode, press `Cmd + r`
+To refresh VSCode, press `Cmd + r`.
+If VS Code loses connectivity to the `pyls` server stops, you will have to refresh VSCode.
+
+The VSCode started by that yarn command has a separate user data directory than normal.
+If you want to copy your settings over, run this:
+
+.. code-block:: bash
+
+    # From the vscode-client directory
+    cp ~/Library/Application\ Support/Code/User/settings.json .vscode-dev/user-data/User/settings.json
 
 License
 -------

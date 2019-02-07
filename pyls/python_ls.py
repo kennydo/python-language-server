@@ -229,63 +229,63 @@ class PythonLanguageServer(MethodDispatcher):
         return self._hook('pyls_signature_help', doc_uri, position=position)
 
     def m_text_document__did_close(self, textDocument=None, **_kwargs):
-        self.workspace.rm_document(textDocument['uri'])
+        self.workspace.rm_document(uris.translate_to_server_uri(textDocument['uri']))
 
     def m_text_document__did_open(self, textDocument=None, **_kwargs):
-        self.workspace.put_document(textDocument['uri'], textDocument['text'], version=textDocument.get('version'))
-        self._hook('pyls_document_did_open', textDocument['uri'])
-        self.lint(textDocument['uri'])
+        self.workspace.put_document(uris.translate_to_server_uri(textDocument['uri']), textDocument['text'], version=textDocument.get('version'))
+        self._hook('pyls_document_did_open', uris.translate_to_server_uri(textDocument['uri']))
+        self.lint(uris.translate_to_server_uri(textDocument['uri']))
 
     def m_text_document__did_change(self, contentChanges=None, textDocument=None, **_kwargs):
         for change in contentChanges:
             self.workspace.update_document(
-                textDocument['uri'],
+                uris.translate_to_server_uri(textDocument['uri']),
                 change,
                 version=textDocument.get('version')
             )
-        self.lint(textDocument['uri'])
+        self.lint(uris.translate_to_server_uri(textDocument['uri']))
 
     def m_text_document__did_save(self, textDocument=None, **_kwargs):
-        self.lint(textDocument['uri'])
+        self.lint(uris.translate_to_server_uri(textDocument['uri']))
 
     def m_text_document__code_action(self, textDocument=None, range=None, context=None, **_kwargs):
-        return self.code_actions(textDocument['uri'], range, context)
+        return self.code_actions(uris.translate_to_server_uri(textDocument['uri']), range, context)
 
     def m_text_document__code_lens(self, textDocument=None, **_kwargs):
-        return self.code_lens(textDocument['uri'])
+        return self.code_lens(uris.translate_to_server_uri(textDocument['uri']))
 
     def m_text_document__completion(self, textDocument=None, position=None, **_kwargs):
-        return self.completions(textDocument['uri'], position)
+        return self.completions(uris.translate_to_server_uri(textDocument['uri']), position)
 
     def m_text_document__definition(self, textDocument=None, position=None, **_kwargs):
-        return self.definitions(textDocument['uri'], position)
+        return self.definitions(uris.translate_to_server_uri(textDocument['uri']), position)
 
     def m_text_document__document_highlight(self, textDocument=None, position=None, **_kwargs):
-        return self.highlight(textDocument['uri'], position)
+        return self.highlight(uris.translate_to_server_uri(textDocument['uri']), position)
 
     def m_text_document__hover(self, textDocument=None, position=None, **_kwargs):
-        return self.hover(textDocument['uri'], position)
+        return self.hover(uris.translate_to_server_uri(textDocument['uri']), position)
 
     def m_text_document__document_symbol(self, textDocument=None, **_kwargs):
-        return self.document_symbols(textDocument['uri'])
+        return self.document_symbols(uris.translate_to_server_uri(textDocument['uri']))
 
     def m_text_document__formatting(self, textDocument=None, _options=None, **_kwargs):
         # For now we're ignoring formatting options.
-        return self.format_document(textDocument['uri'])
+        return self.format_document(uris.translate_to_server_uri(textDocument['uri']))
 
     def m_text_document__rename(self, textDocument=None, position=None, newName=None, **_kwargs):
-        return self.rename(textDocument['uri'], position, newName)
+        return self.rename(uris.translate_to_server_uri(textDocument['uri']), position, newName)
 
     def m_text_document__range_formatting(self, textDocument=None, range=None, _options=None, **_kwargs):
         # Again, we'll ignore formatting options for now.
-        return self.format_range(textDocument['uri'], range)
+        return self.format_range(uris.translate_to_server_uri(textDocument['uri']), range)
 
     def m_text_document__references(self, textDocument=None, position=None, context=None, **_kwargs):
         exclude_declaration = not context['includeDeclaration']
-        return self.references(textDocument['uri'], position, exclude_declaration)
+        return self.references(uris.translate_to_server_uri(textDocument['uri']), position, exclude_declaration)
 
     def m_text_document__signature_help(self, textDocument=None, position=None, **_kwargs):
-        return self.signature_help(textDocument['uri'], position)
+        return self.signature_help(uris.translate_to_server_uri(textDocument['uri']), position)
 
     def m_workspace__did_change_configuration(self, settings=None):
         self.config.update((settings or {}).get('pyls', {}))
