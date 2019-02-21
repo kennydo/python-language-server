@@ -129,21 +129,38 @@ On the Server
 .. code-block:: bash
 
     # Check out this repository to a known location.
-    # It can be anywhere. For this example, we'll just put it in the home dir.
+    # It can be anywhere. For this example, we'll put it in the home dir.
     $ git clone https://github.com/kennydo/python-language-server.git ~/python-language-server
 
-    # Go to your code repository
-    $ cd ~/path/to/my/python/code
-
-    # Setup a virtual environment or activate an existing one
-    $ source my_virtualenv/bin/activate
+    # Create a new virtual environment for the language server.
+    # The Python interpreter you choose for the venv here does not have to match
+    # the Python version in the development virtualenvs.
+    $ cd ~/python-language-server
+    $ virtualenv -p python3.6 venv
 
     # Install the `pyls` command
-    $ pip install ~/python-language-server
+    $ pip install .
+
+    # Go to your project repository
+    $ cd ~/path/to/my/python/project
+
+    # Make sure there is a virtualenv, and that it has the requirements of your project installed.
+    $ source virtualenv/bin/activate
+    $ pip install ...
 
     # Run the `pyls` server.
     # The port can be whatever you want.
-    $ SERVER_MOUNT_PATH='file:///home/kedo/workspace/' CLIENT_MOUNT_PATH='file:///Users/kedo/workspace/' pyls --host 0.0.0.0 --port 2525 --tcp
+    # Pass in the virtualenvs that you want the language server to look in
+    # via the `VIRTUALENV_PATHS` environment variable.
+    # You can pass in multiple venvs by separating them by `:`.
+    # This command has been split onto multiple lines for ease of viewing.
+    $ VIRTUALENV_PATHS=~/path/to/my/python/project/virtualenv:~/path/to/another/virtualenv \
+        SERVER_MOUNT_PATH='file:///home/kedo/workspace/' \
+        CLIENT_MOUNT_PATH='file:///Users/kedo/workspace/' \
+        ~/python-language-server/venv/bin/pyls \
+        --host 0.0.0.0 \
+        --port 2525 \
+        --tcp
 
 On the Client
 -------------

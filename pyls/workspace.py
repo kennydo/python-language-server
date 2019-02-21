@@ -95,9 +95,37 @@ class Workspace(object):
         path = uris.to_fs_path(doc_uri)
         return Document(
             doc_uri, source=source, version=version,
-            extra_sys_path=self.source_roots(path),
+            extra_sys_path=self.get_extra_venv_sys_paths() + self.source_roots(path),
             rope_project_builder=self._rope_project_builder,
         )
+
+    @jedi.cache.memoize_method
+    def get_extra_venv_sys_paths(self):
+        """
+        Figure out the extra sys paths for the configured virtualenvs.
+
+        This is memoized because it can be slow, and it's not something
+        we'd want to do for every document.
+        """
+        paths = []
+
+        # We support having the language server looking into other virtualenvs besides the
+        # one that it is running out of.
+        extra_venv_paths = [x for x in os.environ.get('VIRTUALENV_PATHS', '').split(':') if x]
+
+        # We iterate over the extra venvs in reverse because we prepend the list of extra paths.
+        # This preserves the order that the user passed in via the env var.
+        # Passing in A:B:C as extra virtualenv paths results in the paths of A, B, and then C being searched.
+        for extra_venv in reversed(extra_venv_paths):
+            try:
+                env = jedi.api.environment.create_environment(extra_venv)
+            except jedi.api.environment.InvalidPythonEnvironment:
+                log.warning("Virtualenv path %s does not seem to be a valid Python environment", extra_venv)
+                continue
+
+            paths = env.get_sys_path() + paths
+
+        return paths
 
 
 class Document(object):
